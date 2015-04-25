@@ -33,7 +33,7 @@ import javax.swing.SwingConstants;
  * <li>Get a number</li>
  * <li>Select an operator</li>
  * <li>Get the next number</li>
- * <li>Press the {@code "="} button to compute the answer</li>
+ * <li>Press the {@code "="} button to calculate the answer</li>
  * </ol>
  * Results are displayed as integer values if possible.
  */
@@ -162,8 +162,7 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
     private JButton equalsButton() {
         return createButton("=", event -> {
             Double value = getResult();
-            label.setText(value.doubleValue() % 1 == 0 ? Integer.toString(value
-                    .intValue()) : value.toString());
+            label.setText(display(value));
             label.setForeground(value.isInfinite() ? Color.RED : Color.BLACK);
             updateState();
         });
