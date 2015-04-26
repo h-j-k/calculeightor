@@ -23,13 +23,14 @@ public class CalculeightorCommandLineInterfaceTest {
 
     enum TestCase {
         EXIT,
-        ONE_INTEGER("1"),
+        INVALID_INPUTS("abc", "0.1", "0.0"),
+        ONE_INTEGER("0"),
         ONE_INTEGER_AND_OPERATOR("0", "+"),
-        ADD(Arrays.asList("3"), "1", "2", "+"),
-        SUBTRACT(Arrays.asList("-1"), "3", "4", "-"),
-        MULTIPLY(Arrays.asList("30"), "5", "6", "*"),
-        EXPONENT(Arrays.asList("5764801"), "7", "8", "^"),
-        MULTI(Arrays.asList("19", "132"), "9", "10", "+", "-11", "-12", "*");
+        ADD(Arrays.asList("6"), "1", "2", "3", "+"),
+        SUBTRACT(Arrays.asList("-1"), "4", "5", "-"),
+        MULTIPLY(Arrays.asList("42"), "6", "7", "*"),
+        EXPONENT(Arrays.asList("134217728"), "8", "9", "^"),
+        MULTI(Arrays.asList("21", "156"), "10", "11", "+", "-12", "-13", "*");
 
         private final List<String> expected;
         private final String[] inputs;

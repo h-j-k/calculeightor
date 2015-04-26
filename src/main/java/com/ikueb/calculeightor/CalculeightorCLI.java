@@ -43,9 +43,11 @@ public class CalculeightorCLI implements Calculeightor<Double> {
                 String input = scanner.next().trim();
                 if (endInput(input)) {
                     return;
-                } else if (acceptOperator(input)) {
-                    setOperator(OPERATORS.get(input));
-                    showOutput(printer);
+                } else if (isOperator(input)) {
+                    if (acceptOperator(input)) {
+                        setOperator(OPERATORS.get(input));
+                        showOutput(printer);
+                    }
                 } else {
                     acceptValue(input);
                 }
@@ -57,16 +59,17 @@ public class CalculeightorCLI implements Calculeightor<Double> {
         return input.endsWith(END_INPUT);
     }
 
+    private boolean isOperator(String input) {
+        return OPERATORS.containsKey(input);
+    }
+
     private boolean acceptOperator(String input) {
-        if (OPERATORS.containsKey(input)) {
-            if (inputs.size() < MIN_VALUES) {
-                System.err.printf("Minimum %d integers before calculation.%n",
-                        Integer.valueOf(MIN_VALUES));
-                return false;
-            }
-            return true;
+        if (inputs.size() < MIN_VALUES) {
+            System.err.printf("Minimum %d integers before calculation.%n",
+                    Integer.valueOf(MIN_VALUES));
+            return false;
         }
-        return false;
+        return true;
     }
 
     private void acceptValue(String input) {
