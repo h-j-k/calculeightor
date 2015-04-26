@@ -23,7 +23,7 @@ public class CalculeightorCommandLineInterfaceTest {
 
     enum TestCase {
         EXIT,
-        INVALID_INPUTS("abc", "0.1", "0.0"),
+        INVALID_INPUTS("abc", "0.1", "0.0", "/", "%"),
         ONE_INTEGER("0"),
         ONE_INTEGER_AND_OPERATOR("0", "+"),
         ADD(Arrays.asList("6"), "1", "2", "3", "+"),
