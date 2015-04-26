@@ -13,11 +13,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The CLI implementation of {@link Calculeightor}.
+ * <p>
+ * There is no limitation placed on the number of inputs before entering the operator to
+ * use.
+ */
 public class CalculeightorCLI implements Calculeightor<Double> {
 
-    private static final String END_INPUT = "e";
+    public static final Map<String, Operator> OPERATORS = getOperators();
+    public static final String RESULT_PREFIX = "Result: ";
+    public static final String END_INPUT = "e";
     private static final int MIN_VALUES = 2;
-    private static final Map<String, Operator> OPERATORS = getOperators();
 
     private final List<Double> inputs = new ArrayList<>();
     private BinaryOperator<Double> operator;
@@ -28,30 +35,45 @@ public class CalculeightorCLI implements Calculeightor<Double> {
                 .collect(Collectors.toMap(Object::toString, Function.identity()));
     }
 
-    @SuppressWarnings("resource")
-    private void calculate(InputStream source, OutputStream out) {
+    public void calculate(InputStream source, OutputStream out) {
         try (Scanner scanner = new Scanner(source);
+                @SuppressWarnings("resource")
                 PrintStream printer = new PrintStream(out)) {
             while (scanner.hasNext()) {
                 String input = scanner.next().trim();
-                if (input.equals(END_INPUT)) {
+                if (endInput(input)) {
                     return;
-                } else if (OPERATORS.containsKey(input)) {
-                    if (inputs.size() < MIN_VALUES) {
-                        System.err.printf("Minimum %d integers before calculation.",
-                                Integer.valueOf(MIN_VALUES));
-                        continue;
-                    }
+                } else if (acceptOperator(input)) {
                     setOperator(OPERATORS.get(input));
                     showOutput(printer);
                 } else {
-                    try {
-                        appendValue(Double.valueOf(Integer.parseInt(input)));
-                    } catch (NumberFormatException e) {
-                        System.err.println("Not an integer, ignored: " + input);
-                    }
+                    acceptValue(input);
                 }
             }
+        }
+    }
+
+    private boolean endInput(String input) {
+        return input.endsWith(END_INPUT);
+    }
+
+    private boolean acceptOperator(String input) {
+        if (OPERATORS.containsKey(input)) {
+            if (inputs.size() < MIN_VALUES) {
+                System.err.printf("Minimum %d integers before calculation.%n",
+                        Integer.valueOf(MIN_VALUES));
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void acceptValue(String input) {
+        try {
+            appendValue(Double.valueOf(Integer.parseInt(input)));
+        } catch (NumberFormatException e) {
+            System.err.println("Not an integer, ignored: " + input);
         }
     }
 
@@ -65,7 +87,7 @@ public class CalculeightorCLI implements Calculeightor<Double> {
         if (operator == null) {
             return;
         }
-        out.println("Result: " + display(getResult()));
+        out.println(RESULT_PREFIX + display(getResult()));
         inputs.clear();
     }
 
@@ -90,7 +112,7 @@ public class CalculeightorCLI implements Calculeightor<Double> {
     }
 
     public static void main(String[] args) {
-        System.out.printf("Enter integers, any of %s as operators or '%s' to exit.",
+        System.out.printf("Enter integers, any of %s as operators or '%s' to exit.%n",
                 OPERATORS.keySet(), END_INPUT);
         new CalculeightorCLI().calculate(System.in, System.out);
     }
