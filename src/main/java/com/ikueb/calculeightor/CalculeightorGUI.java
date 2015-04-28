@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * The GUI implementation of {@link Calculeightor}.
@@ -47,6 +49,7 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
     private final JLabel label = new JLabel();
     private final List<Double> inputs = new ArrayList<>(2);
     private BinaryOperator<Double> operator;
+    private Double result;
     private State state;
 
     /**
@@ -58,32 +61,37 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
         INIT {
             @Override
             void set(CalculeightorGUI instance) {
-                toggle(instance.operators.stream(), Stream.of(instance.equalsOp));
                 instance.label.setHorizontalAlignment(SwingConstants.CENTER);
+                toggle(instance.operators, Arrays.asList(instance.equalsOp));
             }
         },
         FIRST_OPERAND {
             @Override
             void set(CalculeightorGUI instance) {
-                toggle(instance.numbers.stream(), instance.operators.stream());
+                label(instance, Integer.toString(instance.inputs.get(0).intValue()));
+                toggle(instance.numbers, instance.operators);
             }
         },
         OPERATOR {
             @Override
             void set(CalculeightorGUI instance) {
-                toggle(instance.numbers.stream(), instance.operators.stream());
+                label(instance, instance.operator.toString());
+                toggle(instance.numbers, instance.operators);
             }
         },
         SECOND_OPERAND {
             @Override
             void set(CalculeightorGUI instance) {
-                toggle(instance.numbers.stream(), Stream.of(instance.equalsOp));
+                label(instance, Integer.toString(instance.inputs.get(1).intValue()));
+                toggle(instance.numbers, Arrays.asList(instance.equalsOp));
             }
         },
         EQUALS {
             @Override
             void set(CalculeightorGUI instance) {
-                toggle(instance.numbers.stream(), Stream.of(instance.equalsOp));
+                label(instance, instance.display(instance.result)).setForeground(
+                        instance.result.isInfinite() ? Color.RED : Color.BLACK);
+                toggle(instance.numbers, Arrays.asList(instance.equalsOp));
                 instance.inputs.clear();
             }
         };
@@ -94,9 +102,15 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
 
         abstract void set(CalculeightorGUI instance);
 
-        private static <T extends Component> void toggle(Stream<T>... components) {
-            Stream.of(components).flatMap(Function.identity())
+        @SafeVarargs
+        private static <T extends Component> void toggle(Collection<T>... components) {
+            Stream.of(components).map(Collection::stream).flatMap(Function.identity())
                     .forEach(c -> c.setEnabled(!c.isEnabled()));
+        }
+
+        private static JLabel label(CalculeightorGUI instance, String text) {
+            instance.label.setText(text);
+            return instance.label;
         }
     }
 
@@ -120,19 +134,13 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
 
     private JPanel numbersPanel() {
         return panelOf(IntStream.rangeClosed(0, 9).boxed(), numbers, event -> {
-            Double value = Double.valueOf((((JButton) event.getSource()).getText()));
-            appendValue(value);
-            label.setText(Integer.toString(value.intValue()));
-            updateState();
+            appendValue(Double.valueOf((((JButton) event.getSource()).getText())));
         });
     }
 
     private JPanel operatorsPanel() {
         return panelOf(Stream.of(Operator.values()), operators, event -> {
-            String value = ((JButton) event.getSource()).getText();
-            setOperator(Operator.of(value));
-            label.setText(value);
-            updateState();
+            setOperator(Operator.of(((JButton) event.getSource()).getText()));
         });
     }
 
@@ -160,12 +168,7 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
     }
 
     private JButton equalsButton() {
-        return createButton("=", event -> {
-            Double value = getResult();
-            label.setText(display(value));
-            label.setForeground(value.isInfinite() ? Color.RED : Color.BLACK);
-            updateState();
-        });
+        return createButton("=", event -> { result = getResult(); });
     }
 
     /**
@@ -174,10 +177,11 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
      * @return a {@link JButton} with the input as its text and a key binding of the
      *         first character while the window is in focus
      */
-    private static JButton createButton(Object input, ActionListener listener) {
+    private JButton createButton(Object input, ActionListener listener) {
         String text = input.toString();
         JButton button = new JButton(text);
-        button.addActionListener(listener);
+        button.addActionListener(event -> {
+            listener.actionPerformed(event); updateState(); });
         button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(text.charAt(0)), text);
         button.getActionMap().put(text, getAction(button));
@@ -219,6 +223,6 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
     }
 
     public static void main(String[] args) {
-        new CalculeightorGUI();
+        SwingUtilities.invokeLater(CalculeightorGUI::new);
     }
 }
