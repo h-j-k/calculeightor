@@ -122,6 +122,7 @@ public class CalculeightorGUI extends JFrame implements Calculeightor<Double> {
                 .forEach(this::add);
         updateState();
         pack();
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
