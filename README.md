@@ -1,5 +1,4 @@
-calculeightor
-===
+# Calculeightor
 
 An interface, a GUI implementation and a CLI implementation walked into a bar...
 
