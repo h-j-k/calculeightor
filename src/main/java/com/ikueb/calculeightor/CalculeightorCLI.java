@@ -52,7 +52,6 @@ public class CalculeightorCLI implements Calculeightor<Double> {
 
     public void calculate(InputStream source, OutputStream out) {
         try (Scanner scanner = new Scanner(source);
-                @SuppressWarnings("resource")
                 PrintStream printer = new PrintStream(out)) {
             while (scanner.hasNext()) {
                 String input = scanner.next().trim();
